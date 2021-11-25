@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.ducdiep.map">
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
+    <uses-permission android:name="android.permission.INTERNET"/>
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE"/>
+
+    <application
+        android:allowBackup="true"
+        android:hardwareAccelerated="true"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.MapApp">
+        <activity android:name=".MainActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <meta-data android:name="com.here.android.maps.appid" android:value="BubIskHDLDt7uyLgevce"/>
+        <meta-data android:name="com.here.android.maps.apptoken" android:value="5Tl3AGrfQeVF95v7H2ONBw"/>
+        <meta-data android:name="com.here.android.maps.license.key" android:value="i6G5ni25eu7iuFbteqMf2MUZ2F5n+qFX7126jnduNfHB0/xaL0c9jlMIafB/5j4Ukg/dfur7+OAAxOlIx+c+rllCuueABCSwzSSoJMnKqmNQUTVzndb5t62RUEqLcRFf/GNuA+x76j/qYeBKriX1mcHtttLdxiwp6nL45zYp+ESAXbYIlLI3hQlQUEkNRjvrnyCMrZb2wuiN/bbD1jUtWRm5T4QMMLHxQdWX7C78qHa2jg4NtW21gzU6fEDaMLwxAULxChEuhH38QRzot1gEdgcXm9eCm9umH1YXDh/zvTp9gFV70dzzl42rr59DzE0LZ8m5tLdNLmSpb3be7Vv2MEp5hR7UNkFZvrs7dFiU720qiGhiqM9g2pLcgwc8hKSXe5MmEouUOKYpoE5WEchhFf2CSOfB7LvSzs3fx8ijhwITj0LuAiXtubyDIAERizRrlThfE9jCWLlQyQ4HklBkD3pTuCJ0jHwd+08XTuHWSc0VV14w2wQ8S7LjvhP0CYOUCQguRUnz4Y0wKoAjIWnNA2uxpmVX7R1mZwc4OFE7HmzIA1BqcO5TMinaQCPbi5oKAM6RqSq/7nMt3w8JBRfs8pFuMW+zea3e6AIE2bk4bKu3YZnIxvIdpcG1YH6hvZjRGw63houRenypJDpB6lqj+BiJPG3M4layPHm1/J+PklQ="/>
+    </application>
+
+</manifest>
