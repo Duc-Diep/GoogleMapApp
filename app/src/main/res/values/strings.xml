@@ -1,3 +1,10 @@
 <resources>
     <string name="app_name">MapApp</string>
+    <string-array name="option_tranports">
+        <item>Ô tô</item>
+        <item>Đi bộ</item>
+        <item>Xe bus</item>
+        <item>Xe đạp</item>
+        <item>Xe máy</item>
+    </string-array>
 </resources>

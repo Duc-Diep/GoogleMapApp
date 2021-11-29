@@ -1,15 +1,58 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".MainActivity">
 
-    <fragment
-        class="com.here.android.mpa.venues3d.VenueMapFragment"
-        android:id="@+id/mapfragment"
+    <ProgressBar
+        android:id="@+id/progress_bar"
+        android:visibility="gone"
+        android:elevation="100dp"
+        android:layout_centerInParent="true"
+        android:layout_width="40dp"
+        android:layout_height="40dp"/>
+
+    <SearchView
+        android:id="@+id/search_view"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:elevation="100dp"
+        android:layout_margin="5dp"
+        android:background="@drawable/border_search"
+        android:layout_alignParentTop="true"
+        android:textColor="#020202" />
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rcv_resutl"
+        android:layout_below="@id/search_view"
+        android:visibility="gone"
+        android:background="@color/white"
+        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+        android:orientation="vertical"
+        android:elevation="100dp"
         android:layout_width="match_parent"
         android:layout_height="match_parent"/>
+    <androidx.appcompat.widget.AppCompatButton
+        android:id="@+id/btn_gps"
+        android:background="@drawable/gps"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentBottom="true"
+        android:layout_margin="20dp"
+        android:layout_width="40dp"
+        android:layout_height="40dp"/>
+    <androidx.appcompat.widget.AppCompatButton
+        android:id="@+id/btn_direct"
+        android:background="@drawable/direct"
+        android:layout_alignParentRight="true"
+        android:layout_above="@id/btn_gps"
+        android:layout_marginRight="20dp"
+        android:layout_width="40dp"
+        android:layout_height="40dp"/>
+    <fragment
+        android:id="@+id/mapfragment"
+        class="com.here.android.mpa.mapping.AndroidXMapFragment"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
 
-</LinearLayout>
+</RelativeLayout>
