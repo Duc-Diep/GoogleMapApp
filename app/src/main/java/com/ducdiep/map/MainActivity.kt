@@ -285,14 +285,14 @@ class MainActivity : AppCompatActivity(), OnGestureListener, LocationListener {
                         } else {
                             Toast.makeText(
                                 this@MainActivity,
-                                "Không thể tính toán được quãng đường",
+                                "Không thể tìm được quãng đường thích hợp",
                                 Toast.LENGTH_LONG
                             ).show()
                         }
                     } else {
                         Toast.makeText(
                             this@MainActivity,
-                            "Không thể tính toán được quãng đường",
+                            "Không thể tìm được quãng đường thích hợp",
                             Toast.LENGTH_LONG
                         ).show()
                     }
@@ -352,14 +352,14 @@ class MainActivity : AppCompatActivity(), OnGestureListener, LocationListener {
                         } else {
                             Toast.makeText(
                                 this@MainActivity,
-                                "Error:route results returned is not valid",
+                                "Không thể tìm được quãng đường thích hợp",
                                 Toast.LENGTH_LONG
                             ).show()
                         }
                     } else {
                         Toast.makeText(
                             this@MainActivity,
-                            "Error:route calculation returned error code: $p0",
+                            "Không thể tìm được quãng đường thích hợp",
                             Toast.LENGTH_LONG
                         ).show()
                     }
@@ -406,7 +406,7 @@ class MainActivity : AppCompatActivity(), OnGestureListener, LocationListener {
                 (this as LocationListener)
             )
             currentPosition = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER)
-            Log.d("locationn", "getCurrentPosisition: $currentPosition")
+//            Log.d("locationn", "getCurrentPosisition: $currentPosition")
         } catch (ex: Exception) {
             currentPosition = null
             Toast.makeText(this, "Vui lòng bật GPS để thực hiện ", Toast.LENGTH_SHORT).show()
@@ -445,7 +445,7 @@ class MainActivity : AppCompatActivity(), OnGestureListener, LocationListener {
 
         override fun onQueryTextChange(newText: String): Boolean {
             if (!newText.isEmpty()) {
-                Log.d("doSearch", "onQueryTextChange: $newText")
+//                Log.d("doSearch", "onQueryTextChange: $newText")
                 doSearch(newText)
             } else {
                 setSearchMode(false)
@@ -545,7 +545,7 @@ class MainActivity : AppCompatActivity(), OnGestureListener, LocationListener {
             } else {
                 Toast.makeText(
                     applicationContext,
-                    "ERROR:Place request returns error: $errorCode", Toast.LENGTH_SHORT
+                    "Lỗi khi xác định vị trí", Toast.LENGTH_SHORT
                 )
                     .show()
             }
@@ -562,7 +562,7 @@ class MainActivity : AppCompatActivity(), OnGestureListener, LocationListener {
 
             override fun onCompleted(p0: List<AutoSuggest>?, p1: ErrorCode?) {
                 if (p1 == ErrorCode.NONE) {
-                    Log.d("doSearch", "onCompleted: $p0")
+//                    Log.d("doSearch", "onCompleted: $p0")
                     processSearchResults(p0!!)
                 } else {
                     handleError(p1!!)
