@@ -51,34 +51,20 @@ private val REQUIRED_SDK_PERMISSIONS = arrayOf(
 
 class MainActivity : AppCompatActivity(), OnGestureListener, LocationListener {
 
-    // map embedded in the map fragment
     private var mMap: Map? = null
-
-    // map fragment embedded in this activity
     private var mapFragment: AndroidXMapFragment? = null
-
     private lateinit var mapFragmentView: View
-
     private var currentPosition: Location? = null
-
     private var mActivity: MainActivity? = null
-
     private var mapObjectList: ArrayList<MapObject> = ArrayList()
-
     private var listAutoSuggest: MutableList<AutoSuggest> = ArrayList()
-
     private lateinit var autoSuggestAdapter: AutoSuggestAdapter
-
     private lateinit var searchListener: SearchListener
-
     private var endPointLocation: GeoCoordinate? = null
-
     private var mapRoute: MapRoute? = null
-
     private var currentTranportId = 0
-
     lateinit var transportMode: RouteOptions.TransportMode
-
+    var isCalculated = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -115,7 +101,8 @@ class MainActivity : AppCompatActivity(), OnGestureListener, LocationListener {
                             GeoCoordinate(21.05401, 105.73507), Map.Animation.NONE
                         )
                         addMarkerAtPlace(
-                            GeoCoordinate(21.05401, 105.73507)
+                            GeoCoordinate(21.05401, 105.73507),
+                            R.drawable.location_marker
                         )
                     }
 
@@ -159,11 +146,20 @@ class MainActivity : AppCompatActivity(), OnGestureListener, LocationListener {
             }
         }
 
+        btn_swap.setOnClickListener {
+            if (isCalculated){
+                calculateRoute(endPointLocation!!,GeoCoordinate(currentPosition!!.latitude,currentPosition!!.longitude))
+            }else{
+                Toast.makeText(this, "Chưa chọn khung đường", Toast.LENGTH_SHORT).show()
+            }
+        }
+
+
     }
 
     //show all transport
     private fun showDialogTransport() {
-        val alertDialog: AlertDialog = AlertDialog.Builder(this)
+        AlertDialog.Builder(this)
             .setTitle("Chọn phương tiện") //.setMessage("Yes or No")
             .setSingleChoiceItems(
                 R.array.option_tranports, 0
@@ -179,13 +175,13 @@ class MainActivity : AppCompatActivity(), OnGestureListener, LocationListener {
                     4 -> transportMode = RouteOptions.TransportMode.SCOOTER
                     else -> 0
                 }
-                calculateRoute()
+                calculateRoute(GeoCoordinate(currentPosition!!.latitude,currentPosition!!.longitude),endPointLocation!!)
+                isCalculated = true
             }
             .setNegativeButton(
                 "cancel"
             ) { dialog, which ->
-            }.create()
-        alertDialog.show()
+            }.show()
     }
 
     //getAddress by position
@@ -230,34 +226,27 @@ class MainActivity : AppCompatActivity(), OnGestureListener, LocationListener {
     }
 
     //directions from current location to any location
-    private fun calculateRoute() {
+    private fun calculateRoute(startPoint: GeoCoordinate,endPoint:GeoCoordinate) {
         cleanMap()
         mMap!!.setCenter(
-            GeoCoordinate(
-                currentPosition!!.latitude,
-                currentPosition!!.longitude
-            ),
+            startPoint,
             Map.Animation.NONE
         )
         addMarkerAtPlace(
-            GeoCoordinate(
-                currentPosition!!.latitude,
-                currentPosition!!.longitude
-            )
+            startPoint,
+            R.drawable.location_marker
         )
-        addMarkerAtPlace(endPointLocation!!)
+        addMarkerAtPlace(endPoint, R.drawable.marker)
 
         mMap!!.zoomLevel = 12.0
 
         val routeOptions = RouteOptions()
-        val startPoint =
+        val startPosition =
             RouteWaypoint(
-                GeoCoordinate(
-                    currentPosition!!.latitude, currentPosition!!.longitude
-                )
+                startPoint
             )
-        val destination =
-            RouteWaypoint(endPointLocation!!)
+        val endPosition =
+            RouteWaypoint(endPoint!!)
 
         //line 1
         val coreRouter1 = CoreRouter()
@@ -267,8 +256,8 @@ class MainActivity : AppCompatActivity(), OnGestureListener, LocationListener {
         routeOptions.routeType = RouteOptions.Type.BALANCED
         routeOptions.routeCount = 1
         routePlan1.routeOptions = routeOptions
-        routePlan1.addWaypoint(startPoint)
-        routePlan1.addWaypoint(destination)
+        routePlan1.addWaypoint(startPosition)
+        routePlan1.addWaypoint(endPosition)
         coreRouter1.calculateRoute(routePlan1,
             object :
                 Router.Listener<List<RouteResult>, RoutingError> {
@@ -296,14 +285,14 @@ class MainActivity : AppCompatActivity(), OnGestureListener, LocationListener {
                         } else {
                             Toast.makeText(
                                 this@MainActivity,
-                                "Error:route results returned is not valid",
+                                "Không thể tính toán được quãng đường",
                                 Toast.LENGTH_LONG
                             ).show()
                         }
                     } else {
                         Toast.makeText(
                             this@MainActivity,
-                            "Error:route calculation returned error code: $p0",
+                            "Không thể tính toán được quãng đường",
                             Toast.LENGTH_LONG
                         ).show()
                     }
@@ -318,8 +307,8 @@ class MainActivity : AppCompatActivity(), OnGestureListener, LocationListener {
         routeOptions.routeType = RouteOptions.Type.SHORTEST
         routeOptions.routeCount = 1
         routePlan.routeOptions = routeOptions
-        routePlan.addWaypoint(startPoint)
-        routePlan.addWaypoint(destination)
+        routePlan.addWaypoint(startPosition)
+        routePlan.addWaypoint(endPosition)
         coreRouter.calculateRoute(routePlan,
             object :
                 Router.Listener<List<RouteResult>, RoutingError> {
@@ -349,11 +338,11 @@ class MainActivity : AppCompatActivity(), OnGestureListener, LocationListener {
                                 ).setPositiveButton("Ok") { _, _ ->
 
                                 }.show()
-                            Toast.makeText(
-                                this@MainActivity,
-                                "Khoảng cách: = $length km, \n Thời gian: ${timerConversion(time.toLong())}",
-                                Toast.LENGTH_SHORT
-                            ).show()
+//                            Toast.makeText(
+//                                this@MainActivity,
+//                                "Khoảng cách: = $length km, \n Thời gian: ${timerConversion(time.toLong())}",
+//                                Toast.LENGTH_SHORT
+//                            ).show()
                             val gbb = p0[0].route.boundingBox
                             mMap!!.zoomTo(
                                 gbb!!,
@@ -388,7 +377,8 @@ class MainActivity : AppCompatActivity(), OnGestureListener, LocationListener {
                 Map.Animation.LINEAR
             )
             addMarkerAtPlace(
-                GeoCoordinate(currentPosition!!.latitude, currentPosition!!.longitude)
+                GeoCoordinate(currentPosition!!.latitude, currentPosition!!.longitude),
+                R.drawable.location_marker
             )
         } else {
             Toast.makeText(this, "Chưa bật GPS, không thể xác định vị trí", Toast.LENGTH_SHORT)
@@ -396,7 +386,7 @@ class MainActivity : AppCompatActivity(), OnGestureListener, LocationListener {
         }
     }
 
-    //get position bt gps
+    //get position by gps
     private fun getCurrentPosisition() {
         try {
             val locationManager =
@@ -425,10 +415,10 @@ class MainActivity : AppCompatActivity(), OnGestureListener, LocationListener {
     }
 
     //add marker by position
-    private fun addMarkerAtPlace(geoCoordinate: GeoCoordinate) {
+    private fun addMarkerAtPlace(geoCoordinate: GeoCoordinate, resource: Int) {
         val img = Image()
         try {
-            img.setImageResource(R.drawable.marker)
+            img.setImageResource(resource)
         } catch (e: IOException) {
             e.printStackTrace()
         }
@@ -515,29 +505,16 @@ class MainActivity : AppCompatActivity(), OnGestureListener, LocationListener {
         }
     }
 
-    //place listener
-    private val placeResultListener: ResultListener<Place> = object : ResultListener<Place> {
-
-        override fun onCompleted(place: Place?, errorCode: ErrorCode?) {
-            if (errorCode == ErrorCode.NONE) {
-                handleChoosePlace(place!!)
-            } else {
-                Toast.makeText(
-                    applicationContext,
-                    "ERROR:Place request returns error: $errorCode", Toast.LENGTH_SHORT
-                )
-                    .show()
-            }
-        }
-    }
-
     //add marker to place choose
     fun handleChoosePlace(place: Place) {
         setSearchMode(false)
         cleanMap()
         mMap!!.setCenter(GeoCoordinate(place.location!!.coordinate!!), Map.Animation.NONE)
-        addMarkerAtPlace(GeoCoordinate(place.location!!.coordinate!!))
-        addMarkerAtPlace(GeoCoordinate(currentPosition!!.longitude, currentPosition!!.latitude))
+        addMarkerAtPlace(GeoCoordinate(place.location!!.coordinate!!), R.drawable.marker)
+        addMarkerAtPlace(
+            GeoCoordinate(currentPosition!!.longitude, currentPosition!!.latitude),
+            R.drawable.location_marker
+        )
         endPointLocation = GeoCoordinate(place.location!!.coordinate!!)
     }
 
@@ -557,6 +534,22 @@ class MainActivity : AppCompatActivity(), OnGestureListener, LocationListener {
         builder.setNeutralButton("OK", null)
         builder.create().show()
         setSearchMode(false)
+    }
+
+    //place listener
+    private val placeResultListener: ResultListener<Place> = object : ResultListener<Place> {
+
+        override fun onCompleted(place: Place?, errorCode: ErrorCode?) {
+            if (errorCode == ErrorCode.NONE) {
+                handleChoosePlace(place!!)
+            } else {
+                Toast.makeText(
+                    applicationContext,
+                    "ERROR:Place request returns error: $errorCode", Toast.LENGTH_SHORT
+                )
+                    .show()
+            }
+        }
     }
 
     //search by query
@@ -729,8 +722,11 @@ class MainActivity : AppCompatActivity(), OnGestureListener, LocationListener {
             cleanMap()
             val touchLocation: GeoCoordinate = mMap!!.pixelToGeo(p)!!
             reverseGeocode(touchLocation)
-            addMarkerAtPlace(touchLocation)
-            addMarkerAtPlace(GeoCoordinate(currentPosition!!.latitude, currentPosition!!.longitude))
+            addMarkerAtPlace(touchLocation, R.drawable.marker)
+            addMarkerAtPlace(
+                GeoCoordinate(currentPosition!!.latitude, currentPosition!!.longitude),
+                R.drawable.location_marker
+            )
             endPointLocation = touchLocation
             return false
         }
