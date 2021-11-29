@@ -376,6 +376,7 @@ class MainActivity : AppCompatActivity(), OnGestureListener, LocationListener {
                     }
                 }
             })
+        currentTranportId = 0
 
     }
 
@@ -422,6 +423,7 @@ class MainActivity : AppCompatActivity(), OnGestureListener, LocationListener {
         }
 
     }
+
     //add marker by position
     private fun addMarkerAtPlace(geoCoordinate: GeoCoordinate) {
         val img = Image()
