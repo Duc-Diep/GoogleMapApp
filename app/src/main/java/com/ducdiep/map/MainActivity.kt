@@ -105,12 +105,11 @@ class MainActivity : AppCompatActivity(), OnGestureListener, LocationListener {
                             R.drawable.location_marker
                         )
                     }
-
 //                mMap!!.mapScheme = Map.Scheme.HYBRID_DAY
                     //zoom lv
                     mMap!!.zoomLevel = 12.0
                 } else {
-                    Toast.makeText(this, "Error when load map", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this, "Có lỗi khi load bản đồ", Toast.LENGTH_SHORT).show()
                 }
             }
         }
@@ -123,7 +122,6 @@ class MainActivity : AppCompatActivity(), OnGestureListener, LocationListener {
         autoSuggestAdapter = AutoSuggestAdapter(this, listAutoSuggest)
         autoSuggestAdapter.setOnClickItem {
             handleSelectedAutoSuggest(it)
-//            Toast.makeText(this, "$it", Toast.LENGTH_SHORT).show()
         }
 
         val dividerItemDecoration = DividerItemDecoration(
@@ -153,14 +151,12 @@ class MainActivity : AppCompatActivity(), OnGestureListener, LocationListener {
                 Toast.makeText(this, "Chưa chọn khung đường", Toast.LENGTH_SHORT).show()
             }
         }
-
-
     }
 
     //show all transport
     private fun showDialogTransport() {
         AlertDialog.Builder(this)
-            .setTitle("Chọn phương tiện") //.setMessage("Yes or No")
+            .setTitle("Chọn phương tiện")
             .setSingleChoiceItems(
                 R.array.option_tranports, 0
             ) { dialog, position -> currentTranportId = position }
@@ -265,17 +261,12 @@ class MainActivity : AppCompatActivity(), OnGestureListener, LocationListener {
 
                 override fun onCalculateRouteFinished(p0: List<RouteResult>, p1: RoutingError) {
                     if (p1 == RoutingError.NONE) {
-//                                        m_map!!.removeMapObject(m_mapRoute!!)
                         if (p0!![0].route != null) {
-                            /* Create a MapRoute so that it can be placed on the map */
                             mapRoute = MapRoute(p0[0].route)
                             mapRoute!!.isManeuverNumberVisible = true
 
                             mMap!!.addMapObject(mapRoute!!)
                             mapObjectList.add(mapRoute!!)
-//
-//                            val length = mapRoute!!.route!!.length.toString()
-//                            val time = p0[0].route.getTtaExcludingTraffic(Route.WHOLE_ROUTE)!!.duration
                             val gbb = p0[0].route.boundingBox
                             mMap!!.zoomTo(
                                 gbb!!,
@@ -316,9 +307,7 @@ class MainActivity : AppCompatActivity(), OnGestureListener, LocationListener {
 
                 override fun onCalculateRouteFinished(p0: List<RouteResult>, p1: RoutingError) {
                     if (p1 == RoutingError.NONE) {
-//                                        m_map!!.removeMapObject(m_mapRoute!!)
                         if (p0!![0].route != null) {
-                            /* Create a MapRoute so that it can be placed on the map */
                             mapRoute = MapRoute(p0[0].route)
                             mapRoute!!.color = Color.YELLOW
                             mapRoute!!.isManeuverNumberVisible = true
@@ -326,7 +315,6 @@ class MainActivity : AppCompatActivity(), OnGestureListener, LocationListener {
                             mMap!!.addMapObject(mapRoute!!)
                             mapObjectList.add(mapRoute!!)
 
-                            //-------------------------------------
                             val length = (mapRoute!!.route!!.length / 1000).toString()
                             val time =
                                 p0[0].route.getTtaExcludingTraffic(Route.WHOLE_ROUTE)!!.duration
@@ -338,11 +326,6 @@ class MainActivity : AppCompatActivity(), OnGestureListener, LocationListener {
                                 ).setPositiveButton("Ok") { _, _ ->
 
                                 }.show()
-//                            Toast.makeText(
-//                                this@MainActivity,
-//                                "Khoảng cách: = $length km, \n Thời gian: ${timerConversion(time.toLong())}",
-//                                Toast.LENGTH_SHORT
-//                            ).show()
                             val gbb = p0[0].route.boundingBox
                             mMap!!.zoomTo(
                                 gbb!!,
@@ -366,7 +349,6 @@ class MainActivity : AppCompatActivity(), OnGestureListener, LocationListener {
                 }
             })
         currentTranportId = 0
-
     }
 
     //move to gps position and add marker
@@ -406,7 +388,6 @@ class MainActivity : AppCompatActivity(), OnGestureListener, LocationListener {
                 (this as LocationListener)
             )
             currentPosition = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER)
-//            Log.d("locationn", "getCurrentPosisition: $currentPosition")
         } catch (ex: Exception) {
             currentPosition = null
             Toast.makeText(this, "Vui lòng bật GPS để thực hiện ", Toast.LENGTH_SHORT).show()
@@ -456,7 +437,6 @@ class MainActivity : AppCompatActivity(), OnGestureListener, LocationListener {
 
     //request place by suggest in recycler view
     private fun handleSelectedAutoSuggest(autoSuggest: AutoSuggest) {
-        //    int collectionSize = Integer.parseInt(m_collectionSizeTextView.getText().toString());
         when (autoSuggest.type) {
             AutoSuggest.Type.PLACE -> {
                 val autoSuggestPlace = autoSuggest as AutoSuggestPlace
@@ -474,7 +454,6 @@ class MainActivity : AppCompatActivity(), OnGestureListener, LocationListener {
             AutoSuggest.Type.SEARCH -> {
                 val autoSuggestSearch = autoSuggest as AutoSuggestSearch
                 val discoverRequest = autoSuggestSearch.suggestedSearchRequest
-                // discoverRequest.setCollectionSize(collectionSize);
                 discoverRequest!!.execute(object : ResultListener<DiscoveryResultPage> {
                     override fun onCompleted(p0: DiscoveryResultPage?, p1: ErrorCode?) {
                         if (p1 == ErrorCode.NONE) {
@@ -488,7 +467,7 @@ class MainActivity : AppCompatActivity(), OnGestureListener, LocationListener {
 
                                 Toast.makeText(
                                     this@MainActivity,
-                                    "This is a DiscoveryLink result",
+                                    "Đây là khu vực tổng quát",
                                     Toast.LENGTH_SHORT
                                 ).show()
                             }
@@ -562,7 +541,6 @@ class MainActivity : AppCompatActivity(), OnGestureListener, LocationListener {
 
             override fun onCompleted(p0: List<AutoSuggest>?, p1: ErrorCode?) {
                 if (p1 == ErrorCode.NONE) {
-//                    Log.d("doSearch", "onCompleted: $p0")
                     processSearchResults(p0!!)
                 } else {
                     handleError(p1!!)
