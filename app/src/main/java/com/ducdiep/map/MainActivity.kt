@@ -31,6 +31,7 @@ import com.here.android.mpa.mapping.Map
 import com.here.android.mpa.routing.*
 import com.here.android.mpa.search.*
 import kotlinx.android.synthetic.main.activity_main.*
+import java.io.File
 
 import java.util.*
 import kotlin.collections.ArrayList
@@ -53,7 +54,6 @@ class MainActivity : AppCompatActivity(), LocationListener {
     lateinit var mapViewModel: MapViewModel
     private var mapFragment: AndroidXMapFragment? = null
     private lateinit var mapFragmentView: View
-    private var listAutoSuggest: MutableList<AutoSuggest> = ArrayList()
     private lateinit var autoSuggestAdapter: AutoSuggestAdapter
     private lateinit var searchListener: SearchListener
     var isCalculated = false
@@ -69,7 +69,10 @@ class MainActivity : AppCompatActivity(), LocationListener {
     }
 
     private fun initViewModel() {
-        mapViewModel = ViewModelProvider(this,ViewModelProvider.AndroidViewModelFactory.getInstance(this.application)).get(MapViewModel::class.java)
+        mapViewModel = ViewModelProvider(
+            this,
+            ViewModelProvider.AndroidViewModelFactory.getInstance(this.application)
+        ).get(MapViewModel::class.java)
         mapViewModel.touchLocation.observe(this) {
             showInforTouchLocation(it)
         }
@@ -77,68 +80,80 @@ class MainActivity : AppCompatActivity(), LocationListener {
             setSearchMode(it)
         }
         mapViewModel.listAutoSuggest.observe(this) {
-            processSearchResults(it)
+            if (it != null) {
+                processSearchResults(it)
+            }
         }
-        mapViewModel.isLoading.observe(this){
-            if (it==true){
+        mapViewModel.isLoading.observe(this) {
+            if (it == true) {
                 progress_bar.visibility = View.VISIBLE
-            }else{
+            } else {
                 progress_bar.visibility = View.GONE
             }
         }
-        mapViewModel.directInfor.observe(this){
+        mapViewModel.directInfor.observe(this) {
             showDirectInfor(it)
         }
-    }
-
-    private fun showDirectInfor(it: String?) {
-        AlertDialog.Builder(this).setTitle("Thông tin quãng đường ngắn nhất")
-            .setMessage(
-                it
-            ).setPositiveButton("Ok") { _, _ ->
-            }.show()
-    }
-
-    fun showInforTouchLocation(it: com.here.android.mpa.search.Location) {
-        var str = String.format(
-            "long: %.2f, lat: %.2f",
-            it!!.coordinate!!.longitude,
-            it!!.coordinate!!.latitude
-        )
-        AlertDialog.Builder(this).setTitle("Thông tin")
-            .setMessage("Địa chỉ: ${it!!.address.toString()} \n Tọa độ: $str")
-            .setPositiveButton("Ok") { _, _ ->
-            }.setNegativeButton("Chỉ đường") { _, _ ->
-                showDialogTransport()
+        mapViewModel.isRequestFailed.observe(this) {
+            if (it == false) {
+                Toast.makeText(this, "Xảy ra lỗi khi xác định vị trí", Toast.LENGTH_SHORT).show()
             }
-            .show()
+        }
+        mapViewModel.isDirectFailed.observe(this) {
+            if (it == false) {
+                Toast.makeText(this, "Không thể xác định quãng đường", Toast.LENGTH_SHORT).show()
+            }
+        }
+
     }
+
 
     private fun initView() {
+        progress_bar.visibility = View.VISIBLE
         mapFragmentView = findViewById(R.id.map_fragment)
         mapFragment =
             supportFragmentManager.findFragmentById(R.id.map_fragment) as AndroidXMapFragment?
-        mapViewModel.initMap(mapFragment!!)
+        initMap()
         getCurrentPosisition()
+    }
+
+    //init all
+    fun initMap() {
+        if (mapFragment != null) {
+            //set disk cache
+            MapSettings.setDiskCacheRootPath(
+                "${getExternalFilesDir(null)}${File.separator}.here-maps"
+            )
+            // init mapframent
+            mapFragment?.init {
+                if (it == OnEngineInitListener.Error.NONE) {//no error
+                    progress_bar.visibility = View.GONE
+                    mapFragment?.mapGesture?.addOnGestureListener(object :
+                        MapGesture.OnGestureListener.OnGestureListenerAdapter() {
+                        override fun onTapEvent(p: PointF): Boolean {
+                            mapViewModel.onTap(p)
+                            return false
+                        }
+
+                        override fun onLongPressEvent(p: PointF): Boolean {
+                            mapViewModel.onLongClick(p)
+                            return false
+                        }
+
+                    }, 0, false)
+                    mapViewModel.mMap = mapFragment?.map
+                    mapViewModel.initAttributeMap()
+                } else {
+                    Toast.makeText(this, "Có lỗi khi load bản đồ", Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
     }
 
     fun setClick() {
         //set up search view
         searchListener = SearchListener()
         search_view.setOnQueryTextListener(searchListener)
-
-        //setup adapter search
-        autoSuggestAdapter = AutoSuggestAdapter(this, listAutoSuggest)
-        autoSuggestAdapter.setOnClickItem {
-            mapViewModel.handleSelectedAutoSuggest(it)
-        }
-
-        val dividerItemDecoration = DividerItemDecoration(
-            this,
-            RecyclerView.VERTICAL
-        )
-        rcv_resutl.adapter = autoSuggestAdapter
-        rcv_resutl.addItemDecoration(dividerItemDecoration)
 
         //set on click button
         btn_gps.setOnClickListener {
@@ -165,17 +180,39 @@ class MainActivity : AppCompatActivity(), LocationListener {
         }
     }
 
+    private fun showDirectInfor(it: String?) {
+        AlertDialog.Builder(this).setTitle("Thông tin quãng đường ngắn nhất(màu vàng)")
+            .setMessage(
+                it
+            ).setPositiveButton("Ok") { _, _ ->
+            }.show()
+    }
+
+    fun showInforTouchLocation(it: com.here.android.mpa.search.Location) {
+        var str = String.format(
+            "long: %.2f, lat: %.2f",
+            it!!.coordinate!!.longitude,
+            it!!.coordinate!!.latitude
+        )
+        AlertDialog.Builder(this).setTitle("Thông tin")
+            .setMessage("Địa chỉ: ${it!!.address.toString()} \n Tọa độ: $str")
+            .setPositiveButton("Ok") { _, _ ->
+            }.setNegativeButton("Chỉ đường") { _, _ ->
+                showDialogTransport()
+            }.show()
+    }
+
     //show all transport
     private fun showDialogTransport() {
         AlertDialog.Builder(this)
             .setTitle("Chọn phương tiện")
             .setSingleChoiceItems(
                 R.array.option_tranports, 0
-            ) { dialog, position -> mapViewModel.currentTranportId = position }
+            ) { dialog, position -> mapViewModel.currentTransportId = position }
             .setPositiveButton(
                 "Ok"
             ) { dialog, which ->
-                when (mapViewModel.currentTranportId) {
+                when (mapViewModel.currentTransportId) {
                     0 -> mapViewModel.transportMode = RouteOptions.TransportMode.CAR
                     1 -> mapViewModel.transportMode = RouteOptions.TransportMode.PEDESTRIAN
                     2 -> mapViewModel.transportMode = RouteOptions.TransportMode.PUBLIC_TRANSPORT
@@ -189,7 +226,7 @@ class MainActivity : AppCompatActivity(), LocationListener {
                 isCalculated = true
             }
             .setNegativeButton(
-                "cancel"
+                "Cancel"
             ) { dialog, which ->
             }.show()
     }
@@ -240,9 +277,13 @@ class MainActivity : AppCompatActivity(), LocationListener {
 
     //set adapter recycler view
     private fun processSearchResults(autoSuggests: List<AutoSuggest>) {
-        listAutoSuggest.clear()
-        listAutoSuggest.addAll(autoSuggests)
-        autoSuggestAdapter.notifyDataSetChanged()
+        autoSuggestAdapter = AutoSuggestAdapter(this, autoSuggests)
+        autoSuggestAdapter.setOnClickItem {
+            mapViewModel.handleSelectedAutoSuggest(it)
+        }
+        val dividerItemDecoration = DividerItemDecoration(this, RecyclerView.VERTICAL)
+        rcv_resutl.adapter = autoSuggestAdapter
+        rcv_resutl.addItemDecoration(dividerItemDecoration)
     }
 
     //set when searching is true
@@ -296,8 +337,9 @@ class MainActivity : AppCompatActivity(), LocationListener {
                     if (grantResults[index] != PackageManager.PERMISSION_GRANTED) {
                         // exit the app if one permission is not granted
                         Toast.makeText(
-                            this, "Required permission '" + permissions[index]
-                                    + "' not granted, exiting", Toast.LENGTH_LONG
+                            this,
+                            "Required permission '" + permissions[index] + "' not granted, exiting",
+                            Toast.LENGTH_LONG
                         ).show()
                         finish()
                         return
@@ -305,7 +347,7 @@ class MainActivity : AppCompatActivity(), LocationListener {
                     --index
                 }
                 // all permissions were granted
-                mapViewModel.initMap(mapFragment!!)
+                initMap()
             }
         }
     }
@@ -323,5 +365,4 @@ class MainActivity : AppCompatActivity(), LocationListener {
         Toast.makeText(this, "Đã kích hoạt GPS", Toast.LENGTH_SHORT).show()
         getCurrentPosisition()
     }
-
 }
