@@ -59,7 +59,7 @@
         android:layout_width="40dp"
         android:layout_height="40dp"/>
     <fragment
-        android:id="@+id/mapfragment"
+        android:id="@+id/map_fragment"
         class="com.here.android.mpa.mapping.AndroidXMapFragment"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
